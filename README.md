@@ -1,4 +1,3 @@
-<img width="2639" height="62" alt="image" src="https://github.com/user-attachments/assets/048d4a46-1be4-4b7d-b214-fad455e7b617" /># AI-NWP_Intern_Source_Code
 This repository is managed by Zachariah Loy Yiqi, AI-NWP intern in CCRS, the files here contain codes needed for input downloading, regridding, plotting, along with running and saving scripts for evaluating and bench marking AI-NWP models **AIFS** and **Aurora**.
 <br>
 <br>
