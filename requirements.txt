@@ -1,0 +1,12 @@
+cdsapi
+xarray
+numpy
+pandas
+requests
+cfgrib
+matplotlib
+pandas
+huggingface_hub
+xesmf
+tqdm
+earthkit.regrid
