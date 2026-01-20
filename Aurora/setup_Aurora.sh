@@ -11,5 +11,6 @@ wget https://huggingface.co/microsoft/aurora/blob/main/aurora-0.1-finetuned.ckpt
 
 echo "Installing Aurora library via mamba..."
 mamba install microsoft-aurora -c conda-forge -y
+pip install -r AI-NWP_Intern_Source_Code/requirements.txt
 
 echo "Aurora setup complete!"

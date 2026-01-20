@@ -20,5 +20,6 @@ echo "Installing AIFS dependencies..."
 pip install anemoi-inference[huggingface]==0.4.9 anemoi-models==0.3.1 torch==2.4.0
 pip install earthkit-regrid==0.4.0 ecmwf-opendata 
 pip install flash_attn
+pip install -r AI-NWP_Intern_Source_Code/requirements.txts
 
 echo "AIFS setup complete!"
