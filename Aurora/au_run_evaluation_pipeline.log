@@ -1,1 +1,97 @@
-Job started at Fri Jan 23 00:29:42 +08 2026
+Job started at Fri Jan 23 00:48:39 +08 2026
+STEP 1. Running model Inference...
+Downloading static variables...
+/home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Aurora/au_run_evaluation_pipeline.py:56: DeprecationWarning: numpy.core.numeric is deprecated and has been renamed to numpy._core.numeric. The numpy._core namespace contains private NumPy internals and its use is discouraged, as NumPy internals can change without warning in any release. In practice, most real-world usage of numpy.core is to access functionality in the public NumPy API. If that is the case, use the public NumPy API. If not, you are using NumPy internals. If you would still like to access an internal attribute, use numpy._core.numeric._frombuffer.
+  static_vars = pickle.load(f)
+Static variables loaded.
+Loading model checkpoint...
+Model ready on device: cuda:0
+Skipping aurora_merged_2024-05-15_00.grib: all 8 forecast steps already exist.
+
+All forecasts completed successfully!
+STEP 2. Regrid the forecasts
+processing:  aurora_forecast_2024-05-15_00-out-18.nc
+processing:  aurora_forecast_2024-05-15_00-out-6.nc
+processing:  aurora_forecast_2024-05-15_00-out-12.nc
+processing:  aurora_forecast_2024-05-15_00-out-36.nc
+processing:  aurora_forecast_2024-05-15_00-out-42.nc
+processing:  aurora_forecast_2024-02-06_12-out-6.nc
+processing:  aurora_forecast_2024-05-15_00-out-30.nc
+processing:  aurora_forecast_2024-05-15_00-out-48.nc
+processing:  aurora_forecast_2024-05-15_00-out-24.nc
+All regridded forecasts saved to /home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Aurora/au_forecast_regridded_files
+STEP 3. Compute the weatherbench metrics
+era5_sfc_2024-05-15_06_t2m_regridded.grib  era5_sfc_2024-05-15_06_regridded.grib  era5_pl_2024-05-15_06.grib
+LEAD 6 - aurora_forecast_2024-05-15_00-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-14_12-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-14_06-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-14_00-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-13_18-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-13_12-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-13_06-out-48.nc
+era5_sfc_2024-05-15_12_t2m_regridded.grib  era5_sfc_2024-05-15_12_regridded.grib  era5_pl_2024-05-15_12.grib
+Forecast file not found: aurora_forecast_2024-05-15_06-out-6.nc
+LEAD 12 - aurora_forecast_2024-05-15_00-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-14_12-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-14_06-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-14_00-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-13_18-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-13_12-out-48.nc
+era5_sfc_2024-05-15_18_t2m_regridded.grib  era5_sfc_2024-05-15_18_regridded.grib  era5_pl_2024-05-15_18.grib
+Forecast file not found: aurora_forecast_2024-05-15_12-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-15_06-out-12.nc
+LEAD 18 - aurora_forecast_2024-05-15_00-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-14_12-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-14_06-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-14_00-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-13_18-out-48.nc
+era5_sfc_2024-05-16_00_t2m_regridded.grib  era5_sfc_2024-05-16_00_regridded.grib  era5_pl_2024-05-16_00.grib
+Forecast file not found: aurora_forecast_2024-05-15_18-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-15_12-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-15_06-out-18.nc
+LEAD 24 - aurora_forecast_2024-05-15_00-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-14_12-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-14_06-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-14_00-out-48.nc
+era5_sfc_2024-05-16_06_t2m_regridded.grib  era5_sfc_2024-05-16_06_regridded.grib  era5_pl_2024-05-16_06.grib
+Forecast file not found: aurora_forecast_2024-05-16_00-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-15_18-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-15_12-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-15_06-out-24.nc
+LEAD 30 - aurora_forecast_2024-05-15_00-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-14_12-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-14_06-out-48.nc
+era5_sfc_2024-05-16_12_t2m_regridded.grib  era5_sfc_2024-05-16_12_regridded.grib  era5_pl_2024-05-16_12.grib
+Forecast file not found: aurora_forecast_2024-05-16_06-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-16_00-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-15_18-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-15_12-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-15_06-out-30.nc
+LEAD 36 - aurora_forecast_2024-05-15_00-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-14_12-out-48.nc
+era5_sfc_2024-05-16_18_t2m_regridded.grib  era5_sfc_2024-05-16_18_regridded.grib  era5_pl_2024-05-16_18.grib
+Forecast file not found: aurora_forecast_2024-05-16_12-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-16_06-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-16_00-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-15_18-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-15_12-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-15_06-out-36.nc
+LEAD 42 - aurora_forecast_2024-05-15_00-out-42.nc
+Forecast file not found: aurora_forecast_2024-05-14_18-out-48.nc
+era5_sfc_2024-05-17_00_t2m_regridded.grib  era5_sfc_2024-05-17_00_regridded.grib  era5_pl_2024-05-17_00.grib
+Forecast file not found: aurora_forecast_2024-05-16_18-out-6.nc
+Forecast file not found: aurora_forecast_2024-05-16_12-out-12.nc
+Forecast file not found: aurora_forecast_2024-05-16_06-out-18.nc
+Forecast file not found: aurora_forecast_2024-05-16_00-out-24.nc
+Forecast file not found: aurora_forecast_2024-05-15_18-out-30.nc
+Forecast file not found: aurora_forecast_2024-05-15_12-out-36.nc
+Forecast file not found: aurora_forecast_2024-05-15_06-out-42.nc
+LEAD 48 - aurora_forecast_2024-05-15_00-out-48.nc
+[W123 00:52:00.674265056 AllocatorConfig.cpp:28] Warning: PYTORCH_CUDA_ALLOC_CONF is deprecated, use PYTORCH_ALLOC_CONF instead (function operator())
+Job finished at Fri Jan 23 00:52:13 +08 2026
