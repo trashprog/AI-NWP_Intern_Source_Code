@@ -1,0 +1,13 @@
+AIFS/aifs-single-mse-1.0.ckpt
+AIFS/git-lfs-linux-amd64-v3.5.1.tar.gz
+AIFS/aifs_input_files/*
+AIFS/aifs_forecast_regridded_files/*
+AIFS/git-lfs-3.5.1/*
+
+upload_files_hf.ipynb
+
+Aurora/au_forecast_files/*
+Aurora/au_forecast_regridded_files/*
+Aurora/au_input_files/*
+Aurora/aurora_bilinear_0p25_weights.nc
+Aurora/aurora-0.1-finetuned.ckpt

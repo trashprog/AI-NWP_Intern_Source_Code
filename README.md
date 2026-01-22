@@ -93,6 +93,16 @@ mamba install microsoft-aurora -c conda-forge
     - **au_drwb_sfc_highres.py** > computes all RMSE results for dynamic regional weatherbench entire year of 2024 for SURFACE variables only at 0.1 degrees resolution for the purpose of comparing it with silurian 0.1. 
 
 
+#### 4. Evaluation test cases
+For testing purposes, two scripts can be used to run a full pipeline from running inference -> regridding/processing -> producing rmse results in traditional and dynamic weather bench metrics. To downloaded the test files, go to https://huggingface.co/datasets/DaquaviousDinglenut/ai-nwp-data-assets/tree/main 
+
+Below are where you should move the files to after downlaoding them:
+- truth/* -> Truth/truth_files
+- Aurora/aurora_inputs -> Aurora/au_input_files
+- Aurora/aurora_bilinear_0p25_weights.nc -> Aurora
+- aifs_inputs/* -> aifs_input_files
+
+
 
 
 
