@@ -2,7 +2,7 @@
 #PBS -q normal
 #PBS -j oe
 #PBS -o /home/users/industry/connect/zachloy/log/auro_inf.log
-#PBS -l select=1:ncpus=16:ngpus=1:mem=500gb -l walltime=24:00:00
+#PBS -l select=1:ncpus=16:ngpus=1:mem=500gb -l walltime=6:00:00
 #PBS -P 17001770
 #PBS -N aurora_run
 

@@ -164,9 +164,15 @@ def compute_drwb_sfc(ds_sfc, model='', ds_t2m=None):
     some models have different variables names therefore you can either change the name here
     or just rename them before computing their metrics
     """
-    t2m = ds_t2m['t2m'].values
-    u10 = ds_sfc['u10'].values
-    v10 = ds_sfc['v10'].values
+    if model == 'au':
+        t2m = ds_t2m['2t'].values
+        u10 = ds_sfc['10u'].values
+        v10 = ds_sfc['10v'].values
+    else:
+        t2m = ds_t2m['t2m'].values
+        u10 = ds_sfc['u10'].values
+        v10 = ds_sfc['v10'].values
+    
 
     return compute_t2m_energy(u10, v10, ds_sfc.latitude.values, ds_sfc.longitude.values, t2m)
 
@@ -216,30 +222,40 @@ def extract_trwb_vars(ds, model=''):
     return z, t, q, u, v
 
 # function to compute all weatherbench metrics, traditional and dynamic
-def compute_weatherbenches(truth_pl, truth_sfc, truth_t2m, forecast_pl, forecast_sfc, forecast_t2m, gpm=None, forecast_tp=None):
-
-    # computing the traditional weatherbench metrics
+def compute_weatherbenches_json(truth_pl, truth_sfc, truth_t2m, forecast_pl, forecast_sfc, forecast_t2m, model='au', gpm=None, forecast_tp=None):
+    # --- traditional metrics ---
     fc_z, fc_t, fc_q, fc_u, fc_v = extract_trwb_vars(forecast_pl, model='')
     t_z, t_t, t_q, t_u, t_v = extract_trwb_vars(truth_pl, model='')
 
-    # wind vector rmse
-    wind_vector_rmse, _, _ =  compute_wind_rmse(t_u, t_v, fc_u, fc_v)
+    wind_vector_rmse, _, _ = compute_wind_rmse(t_u, t_v, fc_u, fc_v)
 
-    # the rest of the metrics
-    trwb_rmse_lst = [compute_scalar_rmse(fc_var, t_var) for fc_var, t_var in zip([fc_z, fc_t, fc_q, fc_u, fc_v], [t_z, t_t, t_q, t_u, t_v])]
+    traditional_metrics = {
+        'z_500_rmse': compute_scalar_rmse(fc_z, t_z),
+        't_850_rmse': compute_scalar_rmse(fc_t, t_t),
+        'q_700_rmse': compute_scalar_rmse(fc_q, t_q),
+        'u_850_rmse': compute_scalar_rmse(fc_u, t_u),
+        'v_850_rmse': compute_scalar_rmse(fc_v, t_v),
+        'wind_rmse_850': wind_vector_rmse
+    }
 
-    # append the wind vector rmse to the list contains rmse of [z_500, q_700, t_850, wind_rmse_850]
-    trwb_rmse_lst.append(wind_vector_rmse)
-    
-    # then the dynamic weatherbench metrics
+    # --- dynamic metrics ---
     fc_mse_c850, fc_mse_d200, fc_zeta850 = compute_drwb_pl(forecast_pl)
     t_mse_c850, t_mse_d200, t_zeta850 = compute_drwb_pl(truth_pl)
-    fc_ste, t_ste = compute_drwb_sfc(forecast_sfc,ds_t2m=forecast_t2m), compute_drwb_sfc(truth_sfc, ds_t2m=truth_t2m)
+    fc_ste = compute_drwb_sfc(forecast_sfc, ds_t2m=forecast_t2m, model=model)
+    t_ste  = compute_drwb_sfc(truth_sfc, ds_t2m=truth_t2m, model=model)
 
-    # contains rmse of [mse_conv_850, mse_div_200, vorticity_conv_850, surf_temp_energy_conv, total_precipitation]
-    drwb_rmse_lst = [compute_scalar_rmse(fc_var, t_var) for fc_var, t_var in zip([fc_mse_c850, fc_mse_d200, fc_zeta850, fc_ste], [t_mse_c850, t_mse_d200, t_zeta850, t_ste])]
+    dynamic_metrics = {
+        'mse_conv_850': compute_scalar_rmse(fc_mse_c850, t_mse_c850),
+        'mse_div_200': compute_scalar_rmse(fc_mse_d200, t_mse_d200),
+        'vorticity_conv_850': compute_scalar_rmse(fc_zeta850, t_zeta850),
+        'surf_temp_energy_conv': compute_scalar_rmse(fc_ste, t_ste)
+    }
 
-    if gpm is not None:
-        drwb_rmse_lst.append(compute_scalar_rmse(forecast_tp['tp'].squeeze().values, gpm['precipitation'].squeeze().values))
-        
-    return {'traditional': trwb_rmse_lst, 'dynamic': drwb_rmse_lst}
+    if gpm is not None and forecast_tp is not None:
+        dynamic_metrics['total_precipitation'] = compute_scalar_rmse(
+            forecast_tp['tp'].squeeze().values, gpm['precipitation'].squeeze().values
+        )
+
+    # merge everything into a single flat JSON
+    all_metrics = {**traditional_metrics, **dynamic_metrics}
+    return all_metrics

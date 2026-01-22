@@ -252,8 +252,8 @@ for fc_file in forecast_files:
     out_file = os.path.join(output_path, f"{base_name}_regridded.nc")
     print("processing: ", fc_file)
 
-    if os.path.exists(out_file):
-        continue  # skip already regridded
+    if os.path.exists(out_file) or fc_file == 'aurora_forecast_2024-02-06_12-out-6.nc':
+        continue  # skip already regridded or to skip the refernec eforecast file
 
     try:
         ds = xr.open_dataset(fc_path)
@@ -273,6 +273,12 @@ print(f"All regridded forecasts saved to {output_path}")
 
 print("STEP 3. Compute the weatherbench metrics")
 
+import sys
+from pathlib import Path
+
+# Add the parent folder of 'metric_utils.py' to sys.path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from metric_utils import (
     slice_domain,
     load_dataset,
@@ -284,5 +290,200 @@ from metric_utils import (
 )
 
 truth_dir = '/home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Truth/truth_files'
+forecast_dir = '/home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Aurora/au_forecast_regridded_files'
+grib_files = [file for file in os.listdir(truth_dir) if file.endswith('.grib')]
+lead_times = [6, 12, 18, 24, 30, 36, 42, 48]
+truth_pl_pattern = re.compile(r"era5_pl_(\d{4}-\d{2}-\d{2})_(\d{2})\.grib")
+forecast_files = [file for file in os.listdir(forecast_dir) if file.endswith('.nc')]
+
+# Initialize a dataframe to store results
+metric_names = [
+    'z_500_rmse', 't_850_rmse', 'q_700_rmse', 'wind_rmse_850',
+    'mse_conv_850', 'mse_div_200', 'vorticity_conv_850', 'surf_temp_energy_conv', 'total_precipitation'
+]
+
+results_df = pd.DataFrame(columns=['lead_time', 'model'] + metric_names)
+
+# helpers
+def lon_deg_to_360(ds):
+    lon = ds.longitude.astype(np.float32)
+    lon = np.mod(lon, 360.0)
+    lon = xr.where(lon == 360.0, 0.0, lon)
+    ds = ds.assign_coords(longitude=lon)
+    ds = ds.sortby("longitude").sortby("latitude")
+    return ds
+
+
+# values to normalise the rmse based on 2024 full year truth
+trad_scalers = {
+    'z_500': 5880.3076171875,
+    't_850': 291.5773010253906,
+    'q_700': 7.145313262939453,
+    'wind_850': 2.1851322650909424,
+}
+
+dyn_scalers = {
+    'mse_conv_850': 4.4819,
+    'mse_div_200': 7.9143,
+    'vort_conv_850': 0.0005,
+    'ste_conv': 1.1604,
+    'gpm': 1.7863
+}
+
+era5_t2m_files = sorted([f for f in grib_files if f.endswith("_t2m_regridded.grib")], key=lambda f: pd.to_datetime(
+        re.search(r"\d{4}-\d{2}-\d{2}_\d{2}", f).group(),
+        format="%Y-%m-%d_%H"))
+
+era5_sfc_files = sorted([f for f in grib_files if (f.endswith("_regridded.grib") and "t2m" not in f and "pl" not in f)], key=lambda f: pd.to_datetime(
+        re.search(r"\d{4}-\d{2}-\d{2}_\d{2}", f).group(),
+        format="%Y-%m-%d_%H"))
+
+era5_pl_files = sorted([f for f in grib_files if (f.endswith(".grib") and "t2m" not in f and "regridded" not in f)], key=lambda f: pd.to_datetime(
+        re.search(r"\d{4}-\d{2}-\d{2}_\d{2}", f).group(),
+        format="%Y-%m-%d_%H"))
+
+for era5_t2m, era5_sfc, era5_pl in zip(era5_t2m_files, era5_sfc_files, era5_pl_files):
+        match = truth_pl_pattern.match(era5_pl)
+        if not match:
+                continue
+
+        # extract the date from the filename
+        date_str, hour_str = match.groups()
+        valid_time = pd.to_datetime(f"{date_str} {hour_str}:00")
+
+        # load the era5 files
+        era5_pl_ds = load_dataset(os.path.join(truth_dir, era5_pl) ,engine='cfgrib')
+        era5_sfc_ds = load_dataset(os.path.join(truth_dir, era5_sfc) ,engine='cfgrib').rename({'u10':'10u', 'v10':'10v'})
+        era5_t2m_ds = load_dataset(os.path.join(truth_dir, era5_t2m) ,engine='cfgrib').rename({'t2m':'2t'})
+
+        print(f"{era5_t2m}  {era5_sfc}  {era5_pl}")
+
+        for lead in lead_times:
+                fc_valid_time = valid_time - pd.Timedelta(hours=lead)
+                fc_date_str = fc_valid_time.strftime("%Y-%m-%d")
+                fc_hour_str = fc_valid_time.strftime("%H")
+                fc_file_name = f"aurora_forecast_{fc_date_str}_{fc_hour_str}-out-{lead}.nc" # make sure file type is correct
+
+                if fc_file_name not in forecast_files:
+                        print(f"Forecast file not found: {fc_file_name}")
+                        continue
+
+                fc_ds = lon_deg_to_360(xr.open_dataset(os.path.join(forecast_dir, fc_file_name)))
+                fc_ds = fc_ds.interp(
+                        longitude=era5_sfc_ds['longitude'].values,
+                        latitude=era5_sfc_ds['latitude'].values,
+                        method="nearest").sel(latitude=slice(DOMAIN['lat_min'], DOMAIN['lat_max']), longitude=slice(DOMAIN['lon_min'], DOMAIN['lon_max']))
+
+                # Alignment check
+                if not (np.array_equal(era5_sfc_ds['latitude'], fc_ds['latitude']) and
+                        np.array_equal(era5_sfc_ds['longitude'], fc_ds['longitude'])):
+                        print("coord mismatch for: ", fc_file_name)
+                        continue
+
+                print(f"LEAD {lead} - {fc_file_name}")
+
+                # --- Compute weatherbench metrics ---
+                metrics = compute_weatherbenches_json(
+                truth_pl=era5_pl_ds,
+                truth_sfc=era5_sfc_ds,
+                truth_t2m=era5_t2m_ds,
+                forecast_pl=fc_ds,
+                forecast_sfc=fc_ds,
+                forecast_t2m=fc_ds,
+                model='au'
+                )
+
+                # Apply scalers
+                for key in metrics.keys():
+                        if key in trad_scalers:
+                                metrics[key] /= trad_scalers[key]
+                        elif key in dyn_scalers:
+                                metrics[key] /= dyn_scalers[key]
+
+                # Append results
+                row = {'lead_time': lead, 'model': 'Aurora'}
+                row.update(metrics)
+                results_df = pd.concat([results_df, pd.DataFrame([row])], ignore_index=True)
+
+# --- Visualization ---
+# --- Define metric groups ---
+dynamic_metrics = [
+    'mse_conv_850', 'mse_div_200', 'vorticity_conv_850',
+    'surf_temp_energy_conv', 'total_precipitation'
+]
+traditional_metrics = [m for m in metric_names if m not in dynamic_metrics]
+
+# --- Normalize metrics for plotting ---
+# Traditional: scale by trad_scalers, Dynamic: scale by dyn_scalers
+scaled_df = results_df.copy()
+for key in scaled_df.columns:
+    if key in trad_scalers:
+        scaled_df[key] = 1 - (scaled_df[key] / trad_scalers[key])  # express as 1 - normalized
+    elif key in dyn_scalers:
+        scaled_df[key] = 1 - (scaled_df[key] / dyn_scalers[key])
+
+# --- Melt for plotting ---
+def prepare_heatmap(df, metrics_group):
+    melted = df.melt(
+        id_vars=['lead_time', 'model'],
+        value_vars=metrics_group,
+        var_name='metric',
+        value_name='value'
+    )
+    heatmap_df = melted.pivot(index='lead_time', columns='metric', values='value')
+    return heatmap_df
+
+dynamic_df = prepare_heatmap(scaled_df, dynamic_metrics)
+traditional_df = prepare_heatmap(scaled_df, traditional_metrics)
+
+# --- Plot function ---
+# Directory to save figures
+save_dir = "/home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Aurora"
+
+def plot_heatmap(heatmap_df, title, filename):
+    data = heatmap_df.values
+    n_leads, n_metrics = data.shape
+
+    fig, ax = plt.subplots(figsize=(n_metrics*0.9, n_leads*0.6))
+    cmap = plt.get_cmap('Reds')
+    norm = mcolors.Normalize(vmin=np.nanmin(data), vmax=np.nanmax(data))
+
+    for i in range(n_leads):
+        for j in range(n_metrics):
+            val = data[i, j]
+            color = cmap(norm(val)) if not np.isnan(val) else (0.9, 0.9, 0.9)
+            rect = plt.Rectangle([j, i], 1, 1, facecolor=color, edgecolor='white')
+            ax.add_patch(rect)
+            ax.text(j + 0.5, i + 0.5, f"{val:.5f}" if not np.isnan(val) else "NaN",
+                    ha='center', va='center', fontsize=7,
+                    color='white' if not np.isnan(val) and norm(val) > 0.5 else 'black')
+
+    ax.set_xlim(0, n_metrics)
+    ax.set_ylim(0, n_leads)
+    ax.set_xticks(np.arange(n_metrics) + 0.5)
+    ax.set_xticklabels(heatmap_df.columns, rotation=45, ha='right', fontsize=8)
+    ax.set_yticks(np.arange(n_leads) + 0.5)
+    ax.set_yticklabels(heatmap_df.index, fontsize=8)
+    ax.set_xlabel("Metric")
+    ax.set_ylabel("Lead Time (hours)")
+    ax.set_title(title)
+
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=ax)
+    cbar.ax.set_ylabel("1 - Normalized RMSE")
+
+    plt.tight_layout()
+
+    # Save figure
+    filepath = os.path.join(save_dir, filename)
+    fig.savefig(filepath, dpi=300, bbox_inches='tight')
+    plt.close(fig)  # close to free memory
+
+# --- Save dashboards ---
+plot_heatmap(traditional_df, "Traditional Regional Weatherbench (1 - Normalized RMSE)",
+             "traditional_regional_heatmap.png")
+plot_heatmap(dynamic_df, "Dynamic Weatherbench (1 - Normalized RMSE)",
+             "dynamic_weatherbench_heatmap.png")
 
 
