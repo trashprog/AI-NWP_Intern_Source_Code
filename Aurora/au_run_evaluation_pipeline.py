@@ -294,7 +294,8 @@ from metric_utils import (
     compute_drwb_sfc,
     compute_wind_rmse,
     extract_trwb_vars,
-    compute_weatherbenches_json
+    compute_weatherbenches_json,
+    DOMAIN
 )
 
 truth_dir = '/home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Truth/truth_files'
