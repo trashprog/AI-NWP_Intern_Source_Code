@@ -275,6 +275,14 @@ print("STEP 3. Compute the weatherbench metrics")
 
 import sys
 from pathlib import Path
+import os
+import re
+import cfgrib
+import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import xarray as xr
+import numpy as np
 
 # Add the parent folder of 'metric_utils.py' to sys.path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -286,7 +294,7 @@ from metric_utils import (
     compute_drwb_sfc,
     compute_wind_rmse,
     extract_trwb_vars,
-    compute_weatherbenches
+    compute_weatherbenches_json
 )
 
 truth_dir = '/home/project/17001770/weather_department/nwp/zach/AI-NWP_Intern_Source_Code/Truth/truth_files'
