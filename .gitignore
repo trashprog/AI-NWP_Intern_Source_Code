@@ -11,3 +11,4 @@ Aurora/au_forecast_regridded_files/*
 Aurora/au_input_files/*
 Aurora/aurora_bilinear_0p25_weights.nc
 Aurora/aurora-0.1-finetuned.ckpt
+Truth/truth_files/*
