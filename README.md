@@ -102,6 +102,9 @@ Below are where you should move the files to after downlaoding them:
 - Aurora/aurora_bilinear_0p25_weights.nc -> Aurora
 - aifs_inputs/* -> aifs_input_files
 
+#### 5. Alternate installation
+There is a bash script in each model folder titled setup_<model_name>.sh, you can also run them to fully install everything by running the script, do remember to change the paths inside based on where you want to install your environments in.
+
 
 
 
